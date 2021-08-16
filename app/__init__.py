@@ -1,4 +1,5 @@
 from flask import Flask, request, send_from_directory
+from .kenzie.operations_files import send_to_directory
 
 from environs import Env
 import os
@@ -44,7 +45,7 @@ def list_files(tipo=None):
     if tipo:
         ls = os.popen(f'ls {FILES_DIRECTORY} | grep {tipo}')
     else:
-        ls = os.popen("ls {FILES_DIRECTORY}")
+        ls = os.popen(f'ls {FILES_DIRECTORY}')
 
     result = []
 
@@ -58,29 +59,22 @@ def list_files(tipo=None):
 @app.get('/download/<file_name>')
 def download_files(file_name=None):
     if file_name:
-        try:
-            return send_from_directory(
-                directory=FILES_DIRECTORY,
-                path=f'{file_name}',
-                as_attachment=True
-            ), 200
-        except:
-            return 'File name not found in system.', 404
+        return send_to_directory(file_name)
 
     query = request.args
     compression_rate = query.get('compression_rate')
     file_type = query.get('file_type')
 
     if not compression_rate:
-        compression_rate = 3
+        compression_rate = 1
     if not file_type:
         file_type = ''
 
     repo_name = f'{compression_rate}_{file_type}.gz{compression_rate}'
 
-    os.system(f'tar -rv -f /tmp/{repo_name} {FILES_DIRECTORY}/*{file_type}')
+    os.system(f'tar -rv -f /tmp/{repo_name} ./imagens_de_teste/*{file_type}')
 
-    ls = os.popen(f'ls {FILES_DIRECTORY}/*{file_type}')
+    ls = os.popen(f'ls ./imagens_de_teste/*{file_type}')
 
     for item in ls:
         if item:
