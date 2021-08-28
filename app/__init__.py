@@ -80,7 +80,7 @@ def save_file():
 
         uploaded_list.append(file_name)
 
-        return {'msg': f'File(s) {uploaded_list} saved with success!'}, 201
+    return {'msg': f'File(s) {uploaded_list} saved with success!'}, 201
 
 
 @app.get('/files/<tipo>')
