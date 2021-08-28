@@ -1,3 +1,5 @@
+from io import StringIO
+from typing import KeysView, Sized, Type
 from flask import Flask, request, send_from_directory, safe_join
 
 from .kenzie.operations_files import send_to_directory, ls_files
@@ -9,6 +11,8 @@ from environs import Env
 import os
 
 from werkzeug.utils import secure_filename
+
+from app.classes import Files
 
 env = Env()
 env.read_env()
@@ -49,32 +53,34 @@ def save_file():
 
     uploaded_list = []
 
-    files_type_format_aprove = ['.png', '.jpg', '.gif']
-
     for f in files_names:
         current_file = files[f]
 
         file_name = secure_filename(current_file.filename)
 
-        file_size = len(current_file.read())
 
-        file_type = file_name[-4:]
+        try:
+            file = Files(current_file)
 
-        if file_type not in files_type_format_aprove:
-            return {'msg': f'Format {file_type} is not allowed.'}, 415
-        elif (file_size / 1000) > MAX_CONTENT_LENGTH:
-            return {'msg': f'''File very large, not allowed. Your size file {file_size/1000}kB,
-            max upload size file {MAX_CONTENT_LENGTH}kB.'''}, 413
-        elif os.path.exists(f'{UPLOAD_DIRECTORY}/{file_name}'):
-            return {'msg': f'File {file_name} alredy exist in system!'}, 409
-        else:
-            file_path = safe_join(FILES_DIRECTORY, file_name)
+            file.format_type_validated()
 
-            current_file.save(file_path)
+            file.size_file_validated()
 
-            uploaded_list.append(file_name)
+            file.file_exist_system()
+        except TypeError as e:
+            return {'msg': str(e)}, 400
+        except MemoryError as e:
+            return {'msg': str(e)}, 413
+        except FileExistsError as e:
+            return {'msg': str(e)}, 409
 
-    return {'msg': f'File(s) {uploaded_list} saved with success!'}, 201
+        file_path = safe_join(FILES_DIRECTORY, file_name)
+
+        current_file.save(file_path)
+
+        uploaded_list.append(file_name)
+
+        return {'msg': f'File(s) {uploaded_list} saved with success!'}, 201
 
 
 @app.get('/files/<tipo>')

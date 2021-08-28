@@ -2,8 +2,8 @@ from flask import send_from_directory
 
 import os
 
-FILES_DIRECTORY = os.environ['FILES_DIRECTORY']
-MAX_CONTENT_LENGTH = int(os.environ['MAX_CONTENT_LENGTH'])
+FILES_DIRECTORY = '/home/kimanc11/kenzie/q3/sprint_2/banco_de_imagens/imagens_de_teste'
+MAX_CONTENT_LENGTH = 1000
 
 
 def send_to_directory(file_name: str):
